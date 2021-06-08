@@ -71,7 +71,7 @@ BottomNavigationBarItem _navigationBarItem(String label,IconData icono){
 }
 
 void startList(){
-	infos.add(Info('Nivel de Desarrollo de Lenguaje',
+	infos.add(Info('Desarrollo de Lenguaje',
       'Para poder utilizar esta herramienta, haga click en el botón presente en el centro de la pantalla,'
       ' luego se le pediran algunos datos del infante para permitir al sistema  clasificar el nivel de desarrollo de lenguaje del mismo.',
       0));

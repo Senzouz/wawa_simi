@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wawa_simi/src/pages/home_page.dart';
-import 'package:wawa_simi/src/utils/utils.dart';
+import 'package:wawa_simi/src/pages/pp_info_page.dart';
 
 class InfoPage extends StatelessWidget{
 
@@ -17,8 +17,8 @@ class InfoPage extends StatelessWidget{
         actions: [
           info.tipo == 1 ? IconButton(
               icon: Icon(Icons.info),
-              onPressed:() async{
-                launchURL(context,'https://www.diloasist.com/single-post/2017/06/02/qu-c3-a9-son-los-procesos-fonol-c3-b3gicos');})
+              onPressed:() => Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => InfoPP())))
               : Container()
         ],
       ),
