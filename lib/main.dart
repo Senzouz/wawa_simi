@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:wawa_simi/src/pages/splash_page.dart';
 import 'package:wawa_simi/src/pages/home_page.dart';
-import 'package:wawa_simi/src/pages/microphone_page_test.dart';
 
 void main(){
   runApp(MyApp());
@@ -16,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.blueAccent,
       ),
-      home: RecorderPage(),
+      home: HomePage(),
     );
   }
 }
