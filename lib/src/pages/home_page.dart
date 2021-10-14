@@ -87,12 +87,18 @@ void startList(){
 	infos..add(Info('Desarrollo de Lenguaje',
       'Para poder utilizar esta herramienta,'
 			' haga click en el botón presente en el centro de la pantalla,'
-      ' luego se le pediran algunos datos del infante para permitir al sistema'
-			' clasificar el nivel de desarrollo de lenguaje del mismo.',
+      ' primero podrá elegir la edad del infante en cuestión y'
+			' en base a la edad que se seleccione, se mostrarán las'
+			' preguntas correspondientes para poder'
+			' predecir el nivel de desarrollo de lenguaje del mismo.',
       0))
 	..add(Info('Procesos Fonológicos',
       'Para poder utilizar esta herramienta,'
 			' haga click en el botón presente en el centro de la pantalla,'
-      ' unas palabras apareceran en la pantalla y se activará el micrófono.',
+      ' en la pantalla se mostrarán una serie de palabras junto con'
+			' una imagen de las mismas para que el pequeño o pequeña diga.'
+			' Luego de un momento, aparecerán las palabras que fueron mal'
+			' pronunciadas junto con la clase de Proceso Fonológico que le'
+			' corresponde.',
 			1));
 }

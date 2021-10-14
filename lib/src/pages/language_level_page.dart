@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Quiz{
   var questions3 = [
@@ -59,11 +62,13 @@ class Quiz{
 var answers = [];
 var answersQualitative = [];
 var naiveText = '';
-var nquestion = 0;
+var nQuestion = 0;
 var quiz = Quiz();
 var selection = [];
 var chosen = false;
 var end = false;
+var chosenAge = 0;
+var showResult = true;
 
 class LanguageLevelPage extends StatefulWidget{
 
@@ -80,13 +85,14 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
     naiveText = '';
     answers.clear();
     answersQualitative.clear();
-    nquestion = 0;
+    nQuestion = 0;
+    showResult = true;
     super.initState();
   }
 
   void updateQuestion(int answer){
     setState(() {
-      if(nquestion == selection.length - 1) {
+      if(nQuestion == selection.length - 1) {
         answers.add(answer);
         answersQualitative.add(quiz.options[answer]);
         end = true;
@@ -95,7 +101,7 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
       else{
         answers.add(answer);
         answersQualitative.add(quiz.options[answer]);
-        nquestion++;
+        nQuestion++;
       }
     });
   }
@@ -120,6 +126,7 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
         minWidth: width, color: color,
         onPressed: () {
           selectQuiz(age);
+          chosenAge = age;
         },
         child: Text(ageText,
         style: const TextStyle(color: Colors.white)
@@ -146,8 +153,8 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
       color: color,
       onPressed: () {
         setState(() {
-          debugPrint(answers.toString());
-          naiveText = answersQualitative.toString();
+          _predictLanguageLevel();
+          showResult = false;
         });
       },
       child: const Text(
@@ -164,7 +171,7 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-              'Pregunta ${nquestion +1} de ${selection.length}',
+              'Pregunta ${nQuestion +1} de ${selection.length}',
               style: const TextStyle(fontSize: 16.0)),
         ],
       ),
@@ -175,10 +182,26 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
     return Container(
       padding: const EdgeInsets.all(20.0),
       child: Text(
-          selection[nquestion],
+          selection[nQuestion],
           style: const TextStyle(fontSize: 18.0)
       ),
     );
+  }
+
+  Future<void> _predictLanguageLevel() async{
+    final body = {
+      'test': answers.toString(),
+      'type' : chosenAge
+    };
+    final encoded = json.encode(body);
+    final response = await http.post('http://3.82.200.121:5000/languagelevel', body: encoded);
+    if(response.statusCode == 200){
+      final answer = json.decode(response.body);
+      showResult = true;
+      setState(() {
+        naiveText = 'El nivel predicho de desarrollo de lenguaje del niño es ${answer['answer']}';
+      });
+    }
   }
 
   @override
@@ -200,7 +223,31 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
             end ? Column(
               children: [
                 btnEnd(120.0, Colors.blue),
-                Text(naiveText)
+                const SizedBox(height: 50.0),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child:  showResult ? Column(
+                      children: [
+                        Text(
+                          naiveText,
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.black,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
+                          )
+                        ),
+
+                      ],
+                    ) : const CircularProgressIndicator()
+                  ),
+                ),
+                const Text(
+                  'El resultado predicho no es 100% preciso, para una '
+                      'opinión más informada, consultar con un especialista',
+                  style: TextStyle(color: Colors.red),
+                ),
               ],
             )
             : Column(
@@ -236,3 +283,4 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
     );
   }
 }
+

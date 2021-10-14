@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
+import 'package:http/http.dart' as http;
 
 class Words{
 var words = [
@@ -43,6 +47,9 @@ var images = [
 
 var nword = 0;
 var end = false;
+var type = 0;
+var selected = false;
+var showResults = false;
 
 class RecorderPage extends StatefulWidget{
 
@@ -63,6 +70,9 @@ class _RecorderPageState extends State<RecorderPage>{
   RecordingState _recordingState = RecordingState.unset;
   var palabras = Words();
 
+  final List<String> wordsMP = <String>[];
+  final List<String> pp = <String>[];
+
   FlutterAudioRecorder audioRecorder;
 
   Widget numWord(){
@@ -79,10 +89,11 @@ class _RecorderPageState extends State<RecorderPage>{
     );
   }
 
-  void updateWord(){
+  void updateWord() async{
     setState(() {
       if(nword == palabras.words.length - 1) {
         end = true;
+        _predictLanguageLevel();
       }
       else{
         nword++;
@@ -98,12 +109,30 @@ class _RecorderPageState extends State<RecorderPage>{
     }
   }
 
+  Widget btnSelection(double width, Color color, int age, String ageText){
+    return MaterialButton(
+        minWidth: width, color: color,
+        onPressed: () {
+          setState(() {
+            type = age;
+            selected = true;
+          });
+        },
+        child: Text(ageText,
+            style: const TextStyle(color: Colors.white)
+        )
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     nword = 0;
     end = false;
-    //deleteFiles();
+    deleteFiles();
+    type = 0;
+    selected = false;
+    showResults = false;
 
     FlutterAudioRecorder.hasPermissions.then((hasPermission){
       if(hasPermission) {
@@ -114,10 +143,58 @@ class _RecorderPageState extends State<RecorderPage>{
     });
   }
 
+  Widget btnEnd(double width, Color color){
+    return MaterialButton(
+      minWidth: width,
+      color: color,
+      onPressed: () {
+        setState(() {
+          _predictLanguageLevel();
+          showResults = true;
+        });
+      },
+      child: const Text(
+        'Finalizar Prueba',
+        style:  TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _recordingState = RecordingState.unset;
     super.dispose();
+  }
+
+  Future<void> _predictLanguageLevel() async{
+    final appDirec = await getExternalStorageDirectory();
+    final fileList = appDirec.listSync();
+
+    const url = 'http://3.82.200.121:5000/phonological';
+    final request = http.MultipartRequest('POST',Uri.parse(url));
+    var i = 0;
+    request.fields['type'] = type.toString();
+    for (final File file in fileList){
+      request.files.add(
+          await http.MultipartFile.fromPath(
+              palabras.words[i],
+              file.path
+          )
+      );
+      i++;
+    }
+
+    http.Response response = await http.Response.fromStream(await request.send());
+    if (response.statusCode == 200){
+      final Map<String, dynamic> answers = json.decode(response.body);
+      for (final entry in answers.entries) {
+          wordsMP.add(entry.key.substring(0,entry.key.indexOf('.')));
+          pp.add(entry.value);
+      }
+      setState(() {
+        showResults = true;
+      });
+    }
   }
 
   @override
@@ -129,49 +206,96 @@ class _RecorderPageState extends State<RecorderPage>{
         backgroundColor: Colors.indigo,
       ),
       body: SafeArea(
-        child: Column(
+        child: selected ? Column(
           children: [
             const Padding(padding: EdgeInsets.all(10.0)),
             numWord(),
             const SizedBox(height: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            !end ? Column(
               children: [
-                Image(
-                    image: AssetImage(palabras.images[nword]),
-                    height: 250, width: 250),
-                const SizedBox(height: 10),
-                Text(palabras.words[nword])
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                MaterialButton(
-                  onPressed: () async{
-                    await _onRecordButtonPressed();
-                    setState(() {});
-                  },
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: SizedBox(
-                    width: 150,
-                    height: 150,
-                    child: Icon(_recordIcon, size: 50),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image(
+                        image: AssetImage(palabras.images[nword]),
+                        height: 250, width: 250),
+                    const SizedBox(height: 10),
+                    Text(
+                      palabras.words[nword],
+                      style: const TextStyle(fontSize: 25.0)
+                    )
+                  ],
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    child: Text(_recordText),
-                    padding: const EdgeInsets.all(8),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    MaterialButton(
+                      onPressed: () async{
+                        await _onRecordButtonPressed();
+                        setState(() {});
+                      },
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: SizedBox(
+                        width: 150,
+                        height: 150,
+                        child: Icon(_recordIcon, size: 50),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        child: Text(_recordText),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    )
+                  ],
                 )
               ],
             )
+            : showResults ? Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: wordsMP.length,
+                itemBuilder: (BuildContext context, int index){
+                  return Container(
+                    height: 60.0,
+                    margin: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: Text('En la palabra ${wordsMP[index]} se encontró'
+                          ' un proceso fonológico de tipo ${pp[index]}',
+                      style: const TextStyle(fontSize: 18.0)
+                      ),
+                    ),
+                  );
+                }
+              ),
+            )
+            : const Center(
+              child: CircularProgressIndicator(),
+            ),
+            const Text(
+              'El resultado predicho no es 100% preciso, para una '
+                  'opinión más informada, consultar con un especialista',
+              style: TextStyle(color: Colors.red),
+            )
           ],
-        ),
+        )
+        : Container(
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              const Text(
+                  'Elige la edad del niño por favor:',
+                  style: TextStyle(fontSize: 18.0)),
+              btnSelection(120.0, Colors.indigo, 0, '3 años'),
+              btnSelection(120.0, Colors.indigo, 1, '4 años'),
+              btnSelection(120.0, Colors.indigo, 2, '5 años')
+            ],
+          ),
+        )
       )
     );
   }

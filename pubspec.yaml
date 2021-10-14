@@ -31,6 +31,7 @@ dependencies:
   google_fonts:
   flutter_audio_recorder: ^0.5.5
   path_provider:
+  http:
 
 dev_dependencies:
   flutter_test:
