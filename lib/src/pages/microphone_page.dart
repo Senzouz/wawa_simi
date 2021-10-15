@@ -8,21 +8,21 @@ import 'package:http/http.dart' as http;
 
 class Words{
 var words = [
-  'alfombra',
-  'auto',
-  'bufanda',
-  'caperusita',
-  'edificio',
-  'foca',
-  'guante',
-  'helicoptero',
-  'indio',
-  'mariposa',
-  'pantalon',
-  'platano',
-  'plato',
-  'telefono',
-  'tren'
+  'Alfombra',
+  'Auto',
+  'Bufanda',
+  'Caperucita',
+  'Edificio',
+  'Foca',
+  'Guante',
+  'Helicóptero',
+  'Indio',
+  'Mariposa',
+  'Pantalón',
+  'Plátano',
+  'Plato',
+  'Telefono',
+  'Tren'
 ];
 
 var images = [
