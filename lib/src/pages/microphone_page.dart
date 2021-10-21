@@ -170,7 +170,7 @@ class _RecorderPageState extends State<RecorderPage>{
     final appDirec = await getExternalStorageDirectory();
     final fileList = appDirec.listSync();
 
-    const url = 'http://3.82.200.121:5000/phonological';
+    const url = 'http://54.197.154.190:5000/phonological';
     final request = http.MultipartRequest('POST',Uri.parse(url));
     var i = 0;
     request.fields['type'] = type.toString();

@@ -194,7 +194,7 @@ class _LanguageLevelPageState extends State<LanguageLevelPage> {
       'type' : chosenAge
     };
     final encoded = json.encode(body);
-    final response = await http.post('http://3.82.200.121:5000/languagelevel', body: encoded);
+    final response = await http.post('http://54.197.154.190:5000/languagelevel', body: encoded);
     if(response.statusCode == 200){
       final answer = json.decode(response.body);
       showResult = true;
